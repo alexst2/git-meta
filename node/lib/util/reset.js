@@ -264,15 +264,17 @@ exports.reset = co.wrap(function *(repo, commit, type) {
     const subsToTry = Array.from(new Set(changedSubNames.concat(openSubs)));
     yield DoWorkQueue.doInParallel(subsToTry, resetSubmodule);
 
-    // remove added submodules from .gitmodules
-    const modules = yield SubmoduleConfigUtil.getSubmodulesFromIndex(repo,
-                                                                     index);
-    for (const file of removedSubmodules) {
-        delete modules[file];
-    }
+    if (removedSubmodules.length) {
+        // remove added submodules from .gitmodules
+        const modules = yield SubmoduleConfigUtil.getSubmodulesFromIndex(repo,
+                                                                        index);
+        for (const file of removedSubmodules) {
+            delete modules[file];
+        }
 
-    yield SubmoduleConfigUtil.writeUrls(repo, index, modules,
-                                        type === TYPE.MIXED);
+        yield SubmoduleConfigUtil.writeUrls(repo, index, modules,
+                                            type === TYPE.MIXED);
+    }
 
     // Write the index in case we've had to stage submodule changes.
 
